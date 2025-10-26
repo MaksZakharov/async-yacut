@@ -100,8 +100,8 @@ async def upload_files_to_disk(files_data, disk_token, host_url):
             continue
         try:
             file_path = await yandex_upload_file(
-                file, 
-                file.filename, 
+                file,
+                file.filename,
                 disk_token
             )
             try:
