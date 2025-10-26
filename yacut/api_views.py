@@ -37,7 +37,7 @@ def add_short_link():
     custom_id = data.get('custom_id')
     if custom_id:
         # Только латиница и цифры, длина 1–16, и не зарезервированное 'files'
-        if custom_id == 'files' or not re.fullmatch(r'[A-Za-z0-9]{1,16}', 
+        if custom_id == 'files' or not re.fullmatch(r'[A-Za-z0-9]{1,16}',
                                                     custom_id):
             return jsonify(
                 message='Указано недопустимое имя для короткой ссылки'

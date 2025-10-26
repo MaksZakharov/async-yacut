@@ -26,7 +26,7 @@ def get_unique_short_id(length=6):
 
 
 async def yandex_upload_file(file, filename, disk_token):
-    """Загружает файл на Яндекс.Диск и возвращает путь вида `app:/<filename>`."""
+    """Загружает файл на Яндекс.Диск, возвращает путь `app:/<filename>`."""
     headers = {'Authorization': f'OAuth {disk_token}'}
     path = f'app:/{filename}'
 

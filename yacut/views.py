@@ -71,7 +71,11 @@ def files():
             )
             try:
                 uploaded_files = asyncio.run(
-                    upload_files_to_disk(files_data, disk_token, request.host_url)
+                    upload_files_to_disk(
+                        files_data,
+                        disk_token,
+                        request.host_url
+                    )
                 )
                 if not uploaded_files:
                     flash('Не удалось загрузить файлы на Яндекс.Диск.')
@@ -79,7 +83,11 @@ def files():
                 current_app.logger.error('Error uploading files: %s', e)
                 flash(f'Ошибка при загрузке файлов: {e}')
 
-    return render_template('files.html', form=form, uploaded_files=uploaded_files)
+    return render_template(
+        'files.html',
+        form=form,
+        uploaded_files=uploaded_files
+    )
 
 
 async def upload_files_to_disk(files_data, disk_token, host_url):
@@ -91,7 +99,11 @@ async def upload_files_to_disk(files_data, disk_token, host_url):
         if not file.filename:
             continue
         try:
-            file_path = await yandex_upload_file(file, file.filename, disk_token)
+            file_path = await yandex_upload_file(
+                file, 
+                file.filename, 
+                disk_token
+            )
             try:
                 _ = await yandex_get_download_link(file_path, disk_token)
             except Exception:
@@ -104,7 +116,11 @@ async def upload_files_to_disk(files_data, disk_token, host_url):
                 {'filename': file.filename, 'short_link': short_link}
             )
         except Exception as e:
-            current_app.logger.error('Error uploading %s: %s', file.filename, e)
+            current_app.logger.error(
+                'Error uploading %s: %s',
+                file.filename,
+                e
+            )
 
     if url_maps:
         db.session.add_all(url_maps)
@@ -156,7 +172,10 @@ def redirect_to_original(short_id):
         name_part = original.replace('app:', '').lstrip(':/')
         filename = name_part.rsplit('/', 1)[-1] or 'file'
 
-        mime = file_resp.headers.get('Content-Type', 'application/octet-stream')
+        mime = file_resp.headers.get(
+            'Content-Type',
+            'application/octet-stream'
+        )
         buf = BytesIO(file_resp.content)
         buf.seek(0)
 
