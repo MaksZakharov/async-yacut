@@ -1,7 +1,5 @@
 """Утилиты для работы с API Яндекс.Диска."""
 
-import string
-import random
 from http import HTTPStatus
 
 import aiohttp

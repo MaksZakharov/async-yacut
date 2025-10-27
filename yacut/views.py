@@ -16,7 +16,6 @@ from flask import (
     url_for,
 )
 
-from yacut import db
 from yacut.forms import FileUploadForm, URLMapForm
 from yacut.models import URLMap
 from yacut.utils import (
