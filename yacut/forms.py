@@ -13,6 +13,13 @@ from wtforms.validators import (
 )
 
 from yacut.models import URLMap
+from yacut.constants import (
+    MAX_ORIGINAL_LENGTH,
+    MAX_SHORT_LENGTH,
+    SHORT_ID_PATTERN,
+    FORBIDDEN_SHORT,
+    ERR_CUSTOM_ID_TAKEN,
+)
 
 
 class URLMapForm(FlaskForm):
@@ -23,35 +30,41 @@ class URLMapForm(FlaskForm):
         validators=[
             DataRequired(message='Обязательное поле'),
             URL(message='Некорректный URL'),
+            Length(
+                max=MAX_ORIGINAL_LENGTH,
+                message='Ссылка превышает допустимую длину',
+            ),
         ],
     )
+
     custom_id = StringField(
         'Ваш вариант короткой ссылки',
         validators=[
             Length(
-                max=16,
-                message='Указано недопустимое имя для короткой ссылки',
+                min=1,
+                max=MAX_SHORT_LENGTH,
+                message='Недопустимая длина короткой ссылки',
             ),
             Optional(),
             Regexp(
-                r'^[a-zA-Z0-9]*$',
+                SHORT_ID_PATTERN,
                 message='Указано недопустимое имя для короткой ссылки',
             ),
         ],
     )
+
     submit = SubmitField('Создать')
 
     def validate_custom_id(self, field):
         """Проверяет, что custom_id допустим и не занят."""
-        if field.data:
-            if field.data == 'files':
-                raise ValidationError(
-                    'Предложенный вариант короткой ссылки уже существует.'
-                )
-            if URLMap.query.filter_by(short=field.data).first():
-                raise ValidationError(
-                    'Предложенный вариант короткой ссылки уже существует.'
-                )
+        if not field.data:
+            return
+
+        if field.data == FORBIDDEN_SHORT:
+            raise ValidationError(ERR_CUSTOM_ID_TAKEN)
+
+        if URLMap.get_by_short(field.data):
+            raise ValidationError(ERR_CUSTOM_ID_TAKEN)
 
 
 class FileUploadForm(FlaskForm):
@@ -59,6 +72,8 @@ class FileUploadForm(FlaskForm):
 
     files = MultipleFileField(
         'Выберите файлы',
-        validators=[DataRequired(message='Необходимо выбрать файлы')],
+        validators=[
+            DataRequired(message='Необходимо выбрать хотя бы один файл'),
+        ],
     )
     submit = SubmitField('Загрузить')

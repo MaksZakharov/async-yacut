@@ -1,28 +1,16 @@
-"""Утилиты для генерации коротких ссылок и работы с API Яндекс.Диска."""
+"""Утилиты для работы с API Яндекс.Диска."""
 
-import random
 import string
+import random
+from http import HTTPStatus
 
 import aiohttp
 
-from yacut.models import URLMap
 
 YANDEX_HOST = 'https://cloud-api.yandex.net'
 API_VER = 'v1'
 UPLOAD_URL = f'{YANDEX_HOST}/{API_VER}/disk/resources/upload'
 DOWNLOAD_URL = f'{YANDEX_HOST}/{API_VER}/disk/resources/download'
-
-
-def get_unique_short_id(length=6):
-    """Генерирует уникальный короткий идентификатор переменной длины."""
-    characters = string.ascii_letters + string.digits
-    max_attempts = 10
-    for _ in range(max_attempts):
-        short_id = ''.join(random.choices(characters, k=length))
-        exists = URLMap.query.filter_by(short=short_id).first()
-        if short_id != 'files' and not exists:
-            return short_id
-    return get_unique_short_id(length + 1)
 
 
 async def yandex_upload_file(file, filename, disk_token):
@@ -37,7 +25,7 @@ async def yandex_upload_file(file, filename, disk_token):
             params={'path': path, 'overwrite': 'true'},
             timeout=aiohttp.ClientTimeout(total=15),
         ) as resp:
-            if resp.status != 200:
+            if resp.status != HTTPStatus.OK:
                 text = await resp.text()
                 raise Exception(
                     f'Не удалось получить upload url: {resp.status} {text}'
@@ -56,7 +44,9 @@ async def yandex_upload_file(file, filename, disk_token):
             data=file_content,
             timeout=aiohttp.ClientTimeout(total=60),
         ) as resp:
-            if resp.status not in (200, 201, 202):
+            if resp.status not in (
+                HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.ACCEPTED
+            ):
                 text = await resp.text()
                 raise Exception(
                     f'Не удалось загрузить файл: {resp.status} {text}'
@@ -66,7 +56,7 @@ async def yandex_upload_file(file, filename, disk_token):
 
 
 async def yandex_get_download_link(file_path, disk_token):
-    """Возвращает актуальную download-ссылку для пути `app:/<filename>`."""
+    """Возвращает download-ссылку для пути `app:/<filename>`."""
     headers = {'Authorization': f'OAuth {disk_token}'}
     async with aiohttp.ClientSession() as session:
         async with session.get(
@@ -75,7 +65,7 @@ async def yandex_get_download_link(file_path, disk_token):
             params={'path': file_path},
             timeout=aiohttp.ClientTimeout(total=15),
         ) as resp:
-            if resp.status != 200:
+            if resp.status != HTTPStatus.OK:
                 text = await resp.text()
                 raise Exception(
                     f'Не удалось получить download url: {resp.status} {text}'

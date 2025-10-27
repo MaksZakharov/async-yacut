@@ -20,7 +20,6 @@ from yacut import db
 from yacut.forms import FileUploadForm, URLMapForm
 from yacut.models import URLMap
 from yacut.utils import (
-    get_unique_short_id,
     yandex_get_download_link,
     yandex_upload_file,
 )
@@ -35,21 +34,14 @@ def index():
     short_link = None
 
     if form.validate_on_submit():
-        short_id = form.custom_id.data or get_unique_short_id()
-
-        if short_id == 'files':
-            flash('Предложенный вариант короткой ссылки уже существует.')
-            return render_template('index.html', form=form)
-
-        if URLMap.query.filter_by(short=short_id).first():
-            flash('Предложенный вариант короткой ссылки уже существует.')
-            return render_template('index.html', form=form)
-
-        url_map = URLMap(original=form.original_link.data, short=short_id)
-        db.session.add(url_map)
-        db.session.commit()
-
-        short_link = request.host_url.rstrip('/') + '/' + short_id
+        try:
+            url_map = URLMap.create(
+                form.original_link.data,
+                form.custom_id.data
+            )
+            short_link = url_map.to_dict()['short_link']
+        except ValueError as error:
+            flash(str(error))
 
     return render_template('index.html', form=form, short_link=short_link)
 
@@ -71,16 +63,12 @@ def files():
             )
             try:
                 uploaded_files = asyncio.run(
-                    upload_files_to_disk(
-                        files_data,
-                        disk_token,
-                        request.host_url
-                    )
+                    upload_files_to_disk(files_data, disk_token)
                 )
                 if not uploaded_files:
                     flash('Не удалось загрузить файлы на Яндекс.Диск.')
             except Exception as e:
-                current_app.logger.error('Error uploading files: %s', e)
+                current_app.logger.error(f'Error uploading files: {e}')
                 flash(f'Ошибка при загрузке файлов: {e}')
 
     return render_template(
@@ -90,10 +78,9 @@ def files():
     )
 
 
-async def upload_files_to_disk(files_data, disk_token, host_url):
+async def upload_files_to_disk(files_data, disk_token):
     """Асинхронная загрузка файлов на Яндекс.Диск."""
     uploaded_files = []
-    url_maps = []
 
     for file in files_data:
         if not file.filename:
@@ -109,22 +96,17 @@ async def upload_files_to_disk(files_data, disk_token, host_url):
             except Exception:
                 current_app.logger.exception('Prefetch download link failed')
 
-            short_id = get_unique_short_id()
-            url_maps.append(URLMap(original=file_path, short=short_id))
-            short_link = host_url.rstrip('/') + '/' + short_id
+            url_map = URLMap.create(file_path)
+            short_link = url_for(
+                'main.redirect_to_original',
+                short_id=url_map.short,
+                _external=True
+            )
             uploaded_files.append(
                 {'filename': file.filename, 'short_link': short_link}
             )
         except Exception as e:
-            current_app.logger.error(
-                'Error uploading %s: %s',
-                file.filename,
-                e
-            )
-
-    if url_maps:
-        db.session.add_all(url_maps)
-        db.session.commit()
+            current_app.logger.error(f'Error uploading {file.filename}: {e}')
 
     return uploaded_files
 
@@ -132,10 +114,14 @@ async def upload_files_to_disk(files_data, disk_token, host_url):
 @bp.route('/<short_id>')
 def redirect_to_original(short_id):
     """Переадресует по короткой ссылке или выдаёт файл с Яндекс.Диска."""
-    url_map = URLMap.query.filter_by(short=short_id).first_or_404()
-    original = url_map.original
+    url_map = URLMap.get_by_short(short_id)
+    if not url_map:
+        flash('Указанный id не найден.')
+        return redirect(url_for('main.index'))
 
+    original = url_map.original
     is_disk_path = original.startswith('/') or original.startswith('app:/')
+
     if not is_disk_path:
         return redirect(original, code=HTTPStatus.FOUND)
 
@@ -146,7 +132,7 @@ def redirect_to_original(short_id):
     )
     if not disk_token:
         current_app.logger.error('No Yandex.Disk token configured')
-        flash('Отсутствует токен Яндекс.Диска')
+        flash('Отсутствует токен Яндекс.Диска.')
         return redirect(url_for('main.files'))
 
     try:
@@ -161,7 +147,7 @@ def redirect_to_original(short_id):
         if not href:
             raise RuntimeError('В ответе нет href')
     except Exception as e:
-        current_app.logger.exception('Yandex href error: %s', e)
+        current_app.logger.exception(f'Yandex href error: {e}')
         flash('Не удалось получить ссылку на скачивание файла.')
         return redirect(url_for('main.files'))
 
@@ -188,6 +174,6 @@ def redirect_to_original(short_id):
             conditional=False,
         )
     except Exception as e:
-        current_app.logger.exception('File proxy error: %s', e)
+        current_app.logger.exception(f'File proxy error: {e}')
         flash('Не удалось скачать файл с Яндекс.Диска.')
         return redirect(url_for('main.files'))
