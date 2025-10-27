@@ -38,8 +38,8 @@ class URLMap(db.Model):
         return {
             'url': self.original,
             'short_link': url_for(
-                'redirect_view',
-                short=self.short,
+                'main.redirect_to_original',
+                short_id=self.short,
                 _external=True
             ),
         }
