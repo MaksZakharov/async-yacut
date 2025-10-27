@@ -6,6 +6,7 @@ from io import BytesIO
 
 import requests
 from flask import (
+    abort,
     Blueprint,
     current_app,
     flash,
@@ -115,8 +116,7 @@ def redirect_to_original(short_id):
     """Переадресует по короткой ссылке или выдаёт файл с Яндекс.Диска."""
     url_map = URLMap.get_by_short(short_id)
     if not url_map:
-        flash('Указанный id не найден.')
-        return redirect(url_for('main.index'))
+        abort(HTTPStatus.NOT_FOUND)
 
     original = url_map.original
     is_disk_path = original.startswith('/') or original.startswith('app:/')

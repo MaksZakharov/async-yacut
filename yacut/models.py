@@ -61,7 +61,7 @@ class URLMap(db.Model):
             if (custom_id == FORBIDDEN_SHORT
                     or not re.fullmatch(SHORT_ID_PATTERN, custom_id)):
                 raise ValueError(
-                    'Указано недопустимое имя для короткой ссылки.'
+                    'Указано недопустимое имя для короткой ссылки'
                 )
             if URLMap.query.filter_by(short=custom_id).first():
                 raise ValueError(

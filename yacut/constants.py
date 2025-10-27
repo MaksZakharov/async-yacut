@@ -14,7 +14,7 @@ FORBIDDEN_SHORT = 'files'
 RESERVED_SHORT_IDS = {'files'}
 
 # --- Тексты ошибок ---
-ERR_INVALID_CUSTOM_ID = 'Указано недопустимое имя для короткой ссылки.'
+ERR_INVALID_CUSTOM_ID = 'Указано недопустимое имя для короткой ссылки'
 ERR_REQUIRED_URL = '"url" является обязательным полем!'
 ERR_CUSTOM_ID_TAKEN = (
     'Предложенный вариант короткой ссылки уже существует.'
