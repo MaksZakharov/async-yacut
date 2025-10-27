@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Ошибка 500 - YaCut{% endblock %}
+{% block title %}
+  Ошибка 500 — YaCut
+{% endblock %}
 
 {% block content %}
-<div class="error-page">
+  <div class="error-page">
     <h2>500</h2>
     <p>Внутренняя ошибка сервера</p>
     <p>{{ error_message or "Что-то пошло не так. Попробуйте позже." }}</p>
-    <a href="{{ url_for('main.index') }}" class="btn btn-primary">Вернуться на главную</a>
-</div>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+      Вернуться на главную
+    </a>
+  </div>
 {% endblock %}

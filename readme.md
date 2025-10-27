@@ -1,60 +1,92 @@
-### Как запустить проект Yacut:
+# Yacut
 
-Клонировать репозиторий и перейти в него в командной строке:
+Yacut — это сервис для сокращения ссылок. 
+Он позволяет создавать короткие ссылки для удобного обмена и отслеживания переходов.
 
-```
-git clone 
-```
+## 🚀 Функционал
 
-```
+- Сокращение длинных ссылок.
+- Возможность указать собственный короткий идентификатор.
+- Автоматическая генерация уникальных коротких ссылок.
+- Переадресация по короткому адресу на оригинальный.
+- API для работы с сервисом.
+- Загрузка файлов на сервер через отдельную страницу.
+
+## 🛠️ Технологии
+
+- **Python 3.9+**
+- **Flask**
+- **SQLAlchemy**
+- **WTForms**
+- **Flask-Migrate**
+- **Jinja2**
+- **SQLite** (на этапе разработки)
+
+## ⚙️ Установка и запуск
+
+Клонируйте репозиторий и перейдите в него в командной строке:
+
+```bash
+git clone <ссылка-на-репозиторий>
 cd yacut
 ```
 
-Cоздать и активировать виртуальное окружение:
+Создайте и активируйте виртуальное окружение:
 
-```
+```bash
 python3 -m venv venv
+# Для Linux/macOS
+source venv/bin/activate
+# Для Windows
+source venv/Scripts/activate
 ```
 
-* Если у вас Linux/macOS
+Установите зависимости:
 
-    ```
-    source venv/bin/activate
-    ```
-
-* Если у вас windows
-
-    ```
-    source venv/scripts/activate
-    ```
-
-Установить зависимости из файла requirements.txt:
-
-```
+```bash
 python3 -m pip install --upgrade pip
-```
-
-```
 pip install -r requirements.txt
 ```
 
-Создать в директории проекта файл .env с четыремя переменными окружения:
+Создайте файл `.env` в корневой директории проекта и укажите переменные окружения:
 
 ```
 FLASK_APP=yacut
 FLASK_ENV=development
 SECRET_KEY=your_secret_key
-DB=sqlite:///db.sqlite3
+DATABASE_URI=sqlite:///db.sqlite3
+DISK_TOKEN=your_yandex_disk_token
 ```
 
-Создать базу данных и применить миграции:
+Создайте базу данных и примените миграции:
 
-```
+```bash
 flask db upgrade
 ```
 
-Запустить проект:
+Запустите приложение:
 
-```
+```bash
 flask run
 ```
+
+После запуска проект будет доступен по адресу:  
+👉 http://127.0.0.1:5000/
+
+## 📁 Структура проекта
+
+```
+yacut/
+├── __init__.py
+├── api_views.py
+├── forms.py
+├── models.py
+├── views.py
+├── static/
+└── templates/
+```
+
+## 👤 Автор
+
+**Макс Захаров**  
+Python Developer | [GitHub: MaksZakharov](https://github.com/MaksZakharov)
