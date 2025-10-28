@@ -89,4 +89,3 @@ class URLMap(db.Model):
         raise ShortIDGenerationError(
             'Не удалось сгенерировать уникальный короткий ID'
         )
-    
