@@ -5,6 +5,7 @@ import re
 # --- Настройки идентификаторов ---
 SHORT_ID_LEN = 6
 MAX_ORIGINAL_LENGTH = 500
+MIN_SHORT_LENGTH = 1
 MAX_SHORT_LENGTH = 16
 SHORT_ID_PATTERN = r'[A-Za-z0-9]{1,16}'
 ALLOWED_CUSTOM_ID_RE = re.compile(r'^[A-Za-z0-9]+$')
@@ -21,5 +22,4 @@ ERR_CUSTOM_ID_TAKEN = (
 )
 
 # --- Генерация коротких ссылок ---
-SHORT_ID_LEN = 6
 MAX_ATTEMPTS = 10

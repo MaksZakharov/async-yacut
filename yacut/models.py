@@ -1,21 +1,22 @@
 """Модель базы данных для хранения коротких и оригинальных ссылок."""
 
-from datetime import datetime
+import random
 import re
 import string
-import random
+from datetime import datetime
 
 from flask import url_for
 
 from yacut import db
 from yacut.constants import (
+    FORBIDDEN_SHORT,
     MAX_ATTEMPTS,
     MAX_ORIGINAL_LENGTH,
     MAX_SHORT_LENGTH,
     SHORT_ID_LEN,
     SHORT_ID_PATTERN,
-    FORBIDDEN_SHORT,
 )
+from yacut.exceptions import ShortIDGenerationError
 
 
 class URLMap(db.Model):
@@ -63,7 +64,7 @@ class URLMap(db.Model):
                 raise ValueError(
                     'Указано недопустимое имя для короткой ссылки'
                 )
-            if URLMap.query.filter_by(short=custom_id).first():
+            if URLMap.get_by_short(custom_id):
                 raise ValueError(
                     'Предложенный вариант короткой ссылки уже существует.'
                 )
@@ -85,4 +86,7 @@ class URLMap(db.Model):
             if (short_id != FORBIDDEN_SHORT
                     and not URLMap.get_by_short(short_id)):
                 return short_id
-        raise ValueError('Не удалось сгенерировать уникальный короткий ID')
+        raise ShortIDGenerationError(
+            'Не удалось сгенерировать уникальный короткий ID'
+        )
+    

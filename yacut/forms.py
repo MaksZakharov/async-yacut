@@ -16,6 +16,7 @@ from yacut.models import URLMap
 from yacut.constants import (
     MAX_ORIGINAL_LENGTH,
     MAX_SHORT_LENGTH,
+    MIN_SHORT_LENGTH,
     SHORT_ID_PATTERN,
     FORBIDDEN_SHORT,
     ERR_CUSTOM_ID_TAKEN,
@@ -41,7 +42,7 @@ class URLMapForm(FlaskForm):
         'Ваш вариант короткой ссылки',
         validators=[
             Length(
-                min=1,
+                min=MIN_SHORT_LENGTH,
                 max=MAX_SHORT_LENGTH,
                 message='Недопустимая длина короткой ссылки',
             ),

@@ -1,8 +1,12 @@
 """Утилиты для работы с API Яндекс.Диска."""
 
 from http import HTTPStatus
-
 import aiohttp
+
+from yacut.exceptions import (
+    YandexUploadError,
+    YandexDownloadError,
+)
 
 
 YANDEX_HOST = 'https://cloud-api.yandex.net'
@@ -25,13 +29,13 @@ async def yandex_upload_file(file, filename, disk_token):
         ) as resp:
             if resp.status != HTTPStatus.OK:
                 text = await resp.text()
-                raise Exception(
-                    f'Не удалось получить upload url: {resp.status} {text}'
+                raise YandexUploadError(
+                    f'Не удалось получить upload URL: {resp.status} {text}'
                 )
             data = await resp.json()
             upload_href = data.get('href')
             if not upload_href:
-                raise Exception('Нет href в ответе для upload')
+                raise YandexUploadError('Нет href в ответе для upload')
 
     file.seek(0)
     file_content = file.read()
@@ -46,7 +50,7 @@ async def yandex_upload_file(file, filename, disk_token):
                 HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.ACCEPTED
             ):
                 text = await resp.text()
-                raise Exception(
+                raise YandexUploadError(
                     f'Не удалось загрузить файл: {resp.status} {text}'
                 )
 
@@ -65,11 +69,11 @@ async def yandex_get_download_link(file_path, disk_token):
         ) as resp:
             if resp.status != HTTPStatus.OK:
                 text = await resp.text()
-                raise Exception(
-                    f'Не удалось получить download url: {resp.status} {text}'
+                raise YandexDownloadError(
+                    f'Не удалось получить download URL: {resp.status} {text}'
                 )
             data = await resp.json()
             href = data.get('href')
             if not href:
-                raise Exception('Нет href в ответе для download')
+                raise YandexDownloadError('Нет href в ответе для download')
             return href
